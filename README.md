@@ -1,5 +1,2 @@
-# nofasol-django
-
-https://coderwall.com/p/mvsoyg/django-dumpdata-and-loaddata
-./manage.py dumpdata --exclude auth.permission --exclude contenttypes > db.json
-
+# nofasol_django
+Event Management app created for Nofa Solutions using Python and Django
