@@ -1,0 +1,350 @@
+{% extends 'event_app/base.html' %}
+
+{% load static %}
+
+{% block body_block %}
+<ol class="breadcrumb">
+        <li><a href="/event">Home</a></li>
+        <li class="active">Event Setup</li>
+      </ol>
+      
+      <div class="stepwizard">
+          <div class="stepwizard-row">
+              <div class="stepwizard-step">
+                  <button type="button" class="btn btn-default btn-circle">1</button>
+                  <p>Event Initials</p>
+              </div>
+              <div class="stepwizard-step">
+                  <button type="button" class="btn btn-default btn-circle" >2</button>
+                  <p>Event Fields</p>
+              </div>
+              <div class="stepwizard-step">
+                  <button type="button" class="btn btn-default btn-circle">3</button>
+                  <p>Badge Categories</p>
+              </div> 
+              <div class="stepwizard-step">
+                  <button type="button" class="btn btn-primary btn-circle" >4</button>
+                  <p>Badge Layout</p>
+              </div>         
+          </div>
+      </div>
+      
+      <div class="row">
+          <form id="form1" action="{% url 'event_app:badge_layout' event_id %}" method="POST">
+            {% csrf_token %}
+          <div class="col-md-4">
+              <h4>Step 4 - Badge Layout</h4>
+              <div class="form-group">
+                  <label>Font Family</label>
+                  <select id="fontFamily" class="form-control">
+                      <option value="Arial" selected="selected">Arial</option>
+                      <option value="Calibri">Calibri</option>
+                      <option value="Comic Sans MS">Comic Sans MS</option>
+                      <option value="Courier New">Courier New</option>
+                      <option value="Georgia">Georgia</option>
+                      <option value="Impact">Impact</option>
+                      <option value="Tahoma">Tahoma</option>
+                      <option value="Times New Roman">Times New Roman</option>
+                      <option value="Verdana">Verdana</option>
+                      <option value="Helvetica">Helvetica</option>
+                      <option value="Lucida Sans">Lucida Sans</option>
+                      <option value="Broadway">Broadway</option>
+                      <option value="Cooper Black">Cooper Black</option>
+                      <option value="Arabic Typesetting">Arabic Typesetting</option>
+                      <option value="Simplified Arabic">Simplified Arabic</option>
+                      <option value="Traditional Arabic">Traditional Arabic</option>
+                  </select>
+              </div>
+      
+              <div class="form-group">
+                  <label>Font Size</label>
+                  <select id="fontSize" class="form-control">
+                      <option value="11" selected="selected">11</option>
+                      <option value="12">12</option>
+                      <option value="14">14</option>
+                      <option value="16">16</option>
+                      <option value="18">18</option>
+                      <option value="20">20</option>
+                      <option value="22">22</option>
+                      <option value="24">24</option>
+                      <option value="26">26</option>
+                      <option value="28">28</option>
+                      <option value="36">36</option>
+                      <option value="48">48</option>
+                      <option value="60">60</option>
+                      <option value="72">72</option>
+                      <option value="84">84</option>
+                  </select>
+              </div>
+      
+              <div class="form-group">
+                  <label>Font Weight</label>
+                  <select id="fontWeight" class="form-control">
+                      <option value="normal" selected="selected">normal</option>
+                      <option value="bold">bold</option>
+                  </select>
+              </div>
+      
+              <div class="form-group">
+                  <label>Font Style</label>
+                  <select id="fontStyle" class="form-control">
+                      <option value="normal" selected="selected">normal</option>
+                      <option value="italic">italic</option>
+                  </select>
+              </div>
+      
+              <div class="form-group">
+                  <label>Text Align</label>
+                  <select id="textAlign" class="form-control">
+                      <option value="left" selected="selected">left</option>
+                      <option value="center">center</option>
+                      <option value="right">right</option>
+                  </select>
+              </div>
+      
+              
+              <input type="button" onclick="testPrint()" value="Test Print" style="width: 100px" class="btn btn-info ">&nbsp;&nbsp;       
+              <input type="button" onclick="finish()" value="Finish" style="width: 100px" class="btn btn-success"><br><br>
+              <input type="button" onclick="resetLayout()" value="Reset" style="width: 100px" class="btn btn-warning">
+      
+          </div>
+          <div class="col-md-8">
+              
+              <input type="hidden" name="eventIdForPrint" id="eventIdForPrint" value="{{event_id}}">
+              <input type="hidden" name="action" id="action" >
+      
+              {% for field in fields %}
+              {% if field.field_name != "barcode" %}
+              <input type="hidden" name="{{field.field_name}}_top" id="{{field.field_name}}_top">
+              <input type="hidden" name="{{field.field_name}}_left" id="{{field.field_name}}_left">
+              <input type="hidden" name="{{field.field_name}}_width" id="{{field.field_name}}_width">
+              <input type="hidden" name="{{field.field_name}}_fontFamily" id="{{field.field_name}}_fontFamily">
+              <input type="hidden" name="{{field.field_name}}_fontSize" id="{{field.field_name}}_fontSize">
+              <input type="hidden" name="{{field.field_name}}_fontWeight" id="{{field.field_name}}_fontWeight">
+              <input type="hidden" name="{{field.field_name}}_fontStyle" id="{{field.field_name}}_fontStyle">
+              <input type="hidden" name="{{field.field_name}}_textAlign" id="{{field.field_name}}_textAlign">
+              {% endif %}
+              {% endfor %}
+      
+              <!-- A5 paper size -->
+              <!--
+                  Equivalent A5 paper dimensions in pixels at 300 DPI and 72 DPI respectively are: 
+                  1748 pixels x 2480 pixels (print resolution) 
+                  420 pixels x 595 pixels (screen resolution)
+              -->
+              <canvas id="badgeCanvas" width="559" height="794" style="border: 1px solid black;"></canvas>
+              
+              {% if show_barcode %}
+              <img id="barcode" src="{% static 'event_app/images/barcode.png' %}" style="display: none" >
+              <input type="hidden" name="barcode_top" id="barcode_top">
+              <input type="hidden" name="barcode_left" id="barcode_left">
+              {% endif %}
+      
+      
+                  
+              
+          </div>
+          </form>
+      </div>
+      <div class="row">
+          <div>&nbsp;</div>
+      </div>
+      <div class="row">
+          <div>&nbsp;</div>
+      </div>
+      
+{% endblock %}
+
+{% block scripts_block %}
+      <script src="{% static 'event_app/jquery-3.3.1.min.js' %}"></script>
+      <script src="{% static 'event_app/fabric.min.js' %}"></script>
+      <script src="{% static 'event_app/JsBarcode.all.min.js' %}"></script>
+      
+      <script>
+      
+   
+      
+      var fields = [];
+      var canvas = new fabric.Canvas('badgeCanvas');
+      
+      
+      canvas.on('mouse:down', function(options) {
+        if (options.target) {
+          console.log('an object was clicked! ', options.target.left);
+          $('#fontFamily').val(options.target.fontFamily);
+          $('#fontSize').val(options.target.fontSize);
+          $('#fontWeight').val(options.target.fontWeight);
+          $('#fontStyle').val(options.target.fontStyle);
+          $('#textAlign').val(options.target.textAlign);
+        }
+      });
+      
+      
+      $('#fontFamily').on('change', function(){
+          if(canvas.getActiveObject()){
+              
+              canvas.getActiveObject().set("fontFamily", this.value);
+              canvas.renderAll();
+          }
+          else {
+              alert('Please select an item on the canvas first');
+          }
+      });
+      
+      $('#fontSize').on('change', function(){
+          if(canvas.getActiveObject()){
+              
+              canvas.getActiveObject().set("fontSize", this.value);
+              canvas.renderAll();
+          }
+          else {
+              alert('Please select an item on the canvas first');
+          }
+      });
+      
+      $('#fontWeight').on('change', function(){
+          if(canvas.getActiveObject()){
+              
+              canvas.getActiveObject().set("fontWeight", this.value);
+              canvas.renderAll();
+          }
+          else {
+              alert('Please select an item on the canvas first');
+          }
+      });
+      
+      $('#fontStyle').on('change', function(){
+          if(canvas.getActiveObject()){
+              
+              canvas.getActiveObject().set("fontStyle", this.value);
+              canvas.renderAll();
+          }
+          else {
+              alert('Please select an item on the canvas first');
+          }
+      });
+      
+      $('#textAlign').on('change', function(){
+          if(canvas.getActiveObject()){
+              
+              canvas.getActiveObject().set("textAlign", this.value);
+              canvas.renderAll();
+          }
+          else {
+              alert('Please select an item on the canvas first');
+          }
+      });
+      
+      var finish = function() {
+          $('#action').val('finish');
+          submitForm();
+      }
+      
+      var testPrint = function(){
+          $('#action').val('testprint');
+          submitForm();
+      }
+      
+      var submitForm = function(){
+          
+          //$('#fullName_top').val(txtFullName.top);
+          //$('#fullName_left').val(txtFullName.left);
+          //$('#fullName_width').val(txtFullName.width);
+      
+          for(var i=0; i<fields.length; i++){
+              $('#' + fields[i] + '_top').val(canvas.item(i).top);
+              $('#' + fields[i] + '_left').val(canvas.item(i).left);
+              
+              if(fields[i]!='barcode'){
+                  $('#' + fields[i] + '_width').val(canvas.item(i).width);
+                  $('#' + fields[i] + '_fontFamily').val(canvas.item(i).fontFamily);
+                  $('#' + fields[i] + '_fontSize').val(canvas.item(i).fontSize);
+                  $('#' + fields[i] + '_fontWeight').val(canvas.item(i).fontWeight);
+                  $('#' + fields[i] + '_fontStyle').val(canvas.item(i).fontStyle);
+                  $('#' + fields[i] + '_textAlign').val(canvas.item(i).textAlign);
+              }
+          }
+
+          $('#form1').submit();
+      };
+      
+      var resetLayout = function(){
+          
+          for(var i=0; i<fields.length; i++){
+              canvas.item(i).set('top', (i+1) * 20);
+              canvas.item(i).set('left',10);
+              if(fields[i]!='barcode'){
+                  canvas.item(i).width=100;
+                  canvas.item(i).fontFamily='Calibri';
+                  canvas.item(i).fontSize=11;
+                  canvas.item(i).fontWeight='normal';
+                  canvas.item(i).fontStyle='normal';
+                  canvas.item(i).textAlign='left';
+                  canvas.item(i).angle=0;
+      
+              }
+      
+          }
+          canvas.renderAll();
+      }
+      
+      $(document).ready(function(){
+      
+      
+      
+          /*
+          JsBarcode("#barcode", "19299259221626", {
+          format: "CODE128",
+          width: 1,
+          height:40,
+          margin: 5,
+          textMargin: 0,
+          fontSize: 10,
+          displayValue: true
+          });
+          */
+          
+          var topIndex=0;
+      
+          {% for field in fields %}
+          {% if field.field_name != "barcode" %}
+
+          topIndex = {{ forloop.counter0 }};
+      
+          var {{field.field_name}} = new fabric.Textbox('{{field.field_label}}', {
+              left: {{field.left}},
+              top: {{field.top}},
+              width: {{field.width}},
+              angle: 0,
+              opacity: 1,
+              fontFamily: '{{field.font_family}}',
+              fontSize: {{field.font_size}},
+              fontWeight: '{{field.font_weight}}',
+              fontStyle: '{{field.font_style}}',
+              textAlign: '{{field.text_align}}'
+              });
+      
+          canvas.add({{field.field_name}}); 
+          fields.push('{{field.field_name}}');
+          {% endif %}
+          {% endfor %}
+      
+          {% if show_barcode %}
+              topIndex = topIndex + 100;
+              var imgElement = document.getElementById('barcode');
+              var imgInstance = new fabric.Image(imgElement, {
+              left: {{barcode_left}},
+              top: {{barcode_top}},
+              angle: 0,
+              opacity: 1
+              });
+              canvas.add(imgInstance);
+              fields.push('barcode');
+          {% endif %}
+      
+      });
+      
+            
+      </script>
+
+{% endblock %}

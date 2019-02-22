@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+  <head>
+
+
+    <title>Events</title>
+    <link rel="stylesheet" href="{% static 'event_app/jquery-ui-1.12.1/jquery-ui.min.css' %} ">
+    <link rel="stylesheet" href="{% static 'event_app/bootstrap-3.3.7-dist/css/bootstrap.min.css' %} ">
+    <link rel="stylesheet" href="{% static 'event_app/DataTables/DataTables-1.10.16/css/jquery.dataTables.min.css' %} "/>
+    <link rel='stylesheet' href="{% static 'event_app/style.css' %} " />
+
+
+
+    <script src="https://use.fontawesome.com/422fa3a780.js"></script>
+
+
+  </head>
+
+  <body>
+    {% include 'event_app/header.html' %}
+    <div class="container">
+      {% block body_block %}
+      {% endblock %}
+    </div>
+
+    <script src="{% static 'event_app/jquery-3.3.1.min.js' %} "></script>
+    <script src="{% static 'event_app/jquery-ui-1.12.1/jquery-ui.js' %} "></script>
+    <script src="{% static 'event_app/bootstrap-3.3.7-dist/js/bootstrap.min.js' %} "></script>
+    <script src="{% static 'event_app/DataTables/DataTables-1.10.16/js/jquery.dataTables.min.js' %} "></script>
+
+    {% block scripts_block %}
+    {% endblock %}
+  </body>
+</html>

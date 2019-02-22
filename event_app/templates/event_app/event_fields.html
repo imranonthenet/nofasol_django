@@ -1,0 +1,84 @@
+{% extends 'event_app/base.html' %}
+
+{% load static %}
+
+{% block body_block %}
+
+<ol class="breadcrumb">
+    <li><a href="/event">Home</a></li>
+    <li class="active">Event Setup</li>
+  </ol>
+  
+  <div class="stepwizard">
+      <div class="stepwizard-row">
+          <div class="stepwizard-step">
+              <button type="button" class="btn btn-default btn-circle">1</button>
+              <p>Event Initials</p>
+          </div>
+          <div class="stepwizard-step">
+              <button type="button" class="btn btn-primary btn-circle" >2</button>
+              <p>Event Fields</p>
+          </div>
+          <div class="stepwizard-step">
+              <button type="button" class="btn btn-default btn-circle" disabled="disabled">3</button>
+              <p>Badge Categories</p>
+          </div> 
+          <div class="stepwizard-step">
+              <button type="button" class="btn btn-default btn-circle" disabled="disabled">4</button>
+              <p>Badge Layout</p>
+          </div>         
+      </div>
+  </div>
+  
+  <div class="row">
+      <div class="col-md-12">
+          <h4>Step 2 - Event Fields</h4>
+          
+
+
+
+          <form action="{% url 'event_app:event_fields' event_id %}" method="POST">
+              
+            {% csrf_token %}
+
+  
+   
+              <table class="points_table">
+                  <thead>
+                  <tr>
+                      <th class="col-xs-3">Field Name</th>
+                      <th class="col-xs-3">Caption</th>
+                      <th class="col-xs-1">Is Mandatory</th>
+                      <th class="col-xs-1">Show in Search</th>
+                      <th class="col-xs-1">Include in Search</th>
+                      <th class="col-xs-1">Show in Register</th>
+                      <th class="col-xs-1">Show in Print</th>
+                      <th class="col-xs-1">Excel Column</th>
+                  </tr>
+                  </thead>
+                  <tbody class="points_table_scrollbar">
+                        {% for field in fields %}
+                          <tr class="odd">
+                              <td class="col-xs-3">{{ field.field_name }}</td>
+                              <td class="col-xs-3"><input type="text" class="form-control" name="{{field.field_name}}.field_label" value="{{ field.field_label }}"></td>
+                              <td class="col-xs-1"><input type="checkbox" class="form-control" name="{{field.field_name}}.is_mandatory" {% if field.is_mandatory %} checked {% endif %} ></td>
+                              <td class="col-xs-1"><input type="checkbox" class="form-control" name="{{field.field_name}}.show_in_search" {% if field.show_in_search %} checked {% endif %} ></td>
+                              <td class="col-xs-1"><input type="checkbox" class="form-control" name="{{field.field_name}}.include_in_search" {% if field.include_in_search %} checked {% endif %} ></td>
+                          </tr>
+                        {% endfor %}
+                        
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+                  </tbody>
+  
+              </table>
+  
+  
+              <input type="submit" value="Next" style="width:100px" class="btn btn-success pull-right">
+          
+          </form>
+      </div>
+  
+  </div>
+  <br /><br/><br/>
+       
+  {% endblock %}
