@@ -1,4 +1,5 @@
 from django.db import models
+import os
 
 # Create your models here.
 class Event(models.Model):
@@ -13,6 +14,9 @@ class Event(models.Model):
 
 class ImportData(models.Model):
     import_file = models.FileField(upload_to='imports')
+
+    def filename(self):
+        return os.path.basename(self.import_file.name)
 
 
 class EventField(models.Model):
@@ -56,6 +60,9 @@ class EventBadgeCategory(models.Model):
 
 class EventData(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    uniqueId = models.CharField(max_length=255)
+    barcode = models.CharField(max_length=255)
+    sno = models.CharField(max_length=255)
     title = models.CharField(max_length=255)
     firstName = models.CharField(max_length=255)
     middleName = models.CharField(max_length=255)
@@ -77,7 +84,7 @@ class EventData(models.Model):
     country = models.CharField(max_length=255)
     poBox = models.CharField(max_length=255)
     postalCode = models.CharField(max_length=255)
-    badgeCategory= models.CharField(max_length=255)
+    badgeCategory = models.CharField(max_length=255)
     regType = models.CharField(max_length=255)
     regDate = models.CharField(max_length=255)
     badgePrintDate = models.CharField(max_length=255)
@@ -94,4 +101,3 @@ class EventData(models.Model):
     comment8 = models.CharField(max_length=255)
     comment9 = models.CharField(max_length=255)
     comment10 = models.CharField(max_length=255)
-    username = models.CharField(max_length=255)

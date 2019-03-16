@@ -1,10 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect, Http404
 from .forms import EditForm, ImportDataForm
-from .models import Event, EventField,EventBadgeCategory,BadgeCategory, ImportData
+from .models import Event, EventField,EventBadgeCategory,BadgeCategory, ImportData, EventData
 import os
 from django.core.files.storage import FileSystemStorage
 from django.urls import reverse
+import openpyxl
 
 # Create your views here.
 def event_list(request):
@@ -19,7 +20,59 @@ def import_data(request, id):
         form = ImportDataForm(request.POST, request.FILES)
 
         if form.is_valid():
-            form.save()
+            import_data = form.save()
+            wb = openpyxl.load_workbook(import_data.import_file.path)
+            sheets_list = wb.sheetnames
+
+            sheet = wb[sheets_list[0]]
+            eventData = EventData()
+            eventData.event = event
+
+            for row in range(2,sheet.max_row + 1):
+                eventData.uniqueId = sheet.cell(row,1).value
+                eventData.barcode = sheet.cell(row,2).value
+                eventData.sno = sheet.cell(row,3).value
+                eventData.title = sheet.cell(row,1).value
+                eventData.firstName = sheet.cell(row,1).value
+                eventData.middleName = sheet.cell(row,1).value
+                eventData.lastName = sheet.cell(row,1).value
+                eventData.fullName = sheet.cell(row,1).value
+                eventData.jobTitle = sheet.cell(row,1).value
+                eventData.department = sheet.cell(row,1).value
+                eventData.companyName = sheet.cell(row,1).value
+                eventData.mobile1 = sheet.cell(row,1).value
+                eventData.mobile2 = sheet.cell(row,1).value
+                eventData.tel1 = sheet.cell(row,1).value
+                eventData.tel2 = sheet.cell(row,1).value
+                eventData.fax = sheet.cell(row,1).value
+                eventData.email = sheet.cell(row,1).value
+                eventData.website = sheet.cell(row,1).value
+                eventData.address1 = sheet.cell(row,1).value
+                eventData.address2 = sheet.cell(row,1).value
+                eventData.city = sheet.cell(row,1).value
+                eventData.country = sheet.cell(row,1).value
+                eventData.poBox = sheet.cell(row,1).value
+                eventData.postalCode = sheet.cell(row,1).value
+                eventData.badgeCategory = sheet.cell(row,1).value
+                eventData.regType = 'Online' #sheet.cell(row,1).value
+                eventData.regDate = sheet.cell(row,1).value
+                eventData.badgePrintDate = sheet.cell(row,1).value
+                eventData.modifiedDate = sheet.cell(row,1).value
+                eventData.statusFlag = 'Did Not Attend' #sheet.cell(row,1).value
+                eventData.backoffice = sheet.cell(row,1).value
+                eventData.comment1 = sheet.cell(row,1).value
+                eventData.comment2 = sheet.cell(row,1).value
+                eventData.comment3 = sheet.cell(row,1).value
+                eventData.comment4 = sheet.cell(row,1).value
+                eventData.comment5 = sheet.cell(row,1).value
+                eventData.comment6 = sheet.cell(row,1).value
+                eventData.comment7 = sheet.cell(row,1).value
+                eventData.comment8 = sheet.cell(row,1).value
+                eventData.comment9 = sheet.cell(row,1).value
+                eventData.comment10 = sheet.cell(row,1).value
+
+                eventData.save()
+            
             return redirect('event_app:event_list')
 
     else:
