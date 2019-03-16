@@ -1,0 +1,61 @@
+{% extends 'event_app/base.html' %}
+
+{% block body_block %}
+
+<div class="row">
+    <div class="col-md-12">
+        <h1>Events</h1>
+
+
+        <a href="{% url 'event_app:create_event' %}" class="btn btn-primary">Create Event</a> &nbsp;
+        <a href="/user" class="btn btn-primary">Manage Users</a> &nbsp;
+        <a href="/event/badge-categories-list" class="btn btn-primary">Manage Badge Categories</a>
+
+        <form action="/event/event-fields" method="POST">
+            
+            
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Event Name</th>
+                    <th>From Date</th>
+                    <th>To Date</th>
+                    <th>Actions</th>
+   
+                </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                        <tr>
+                            <td>{{ event.event_name }}</td>
+                            <td>{{ event.event_from_date }}</td>
+                            <td>{{ event.event_to_date }}</td>
+                            <td>
+                                <a href="{% url 'event_app:edit' event.id %}" class="btn btn-warning" >Edit</a>
+                                {% if event.setup_complete %}
+                                <a href="{% url 'event_app:import_data' event.id %}" class="btn btn-success" >Import</a>
+                                <a href="/event/download/{{ event.id }}" class="btn btn-success" >Export</a>
+                                <a href="/event/delete/{{ event.id }}" class="btn btn-danger" >Delete</a>
+                                <a href="/event/registration/{{ event.id }}" class="btn btn-primary" >Registration</a>
+                                <a href="/event/dashboard/{{ event.id }}" class="btn btn-info" >Dashboard</a>
+                                {% endif %}
+                                
+                                
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+                </tbody>
+
+            </table>
+
+        </form>
+    </div>
+
+</div>
+
+      <script>
+
+  </script>
+
+{% endblock %}

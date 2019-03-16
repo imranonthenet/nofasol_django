@@ -5,7 +5,7 @@
 {% block body_block %}
 
 <ol class="breadcrumb">
-    <li><a href="/event">Home</a></li>
+    <li><a href="{% url 'event_app:event_list' %}">Home</a></li>
     <li class="active">Event Setup</li>
   </ol>
   
@@ -64,7 +64,10 @@
                               <td class="col-xs-1"><input type="checkbox" class="form-control" name="{{field.field_name}}.is_mandatory" {% if field.is_mandatory %} checked {% endif %} ></td>
                               <td class="col-xs-1"><input type="checkbox" class="form-control" name="{{field.field_name}}.show_in_search" {% if field.show_in_search %} checked {% endif %} ></td>
                               <td class="col-xs-1"><input type="checkbox" class="form-control" name="{{field.field_name}}.include_in_search" {% if field.include_in_search %} checked {% endif %} ></td>
-                          </tr>
+                              <td class="col-xs-1"><input type="checkbox" class="form-control" name="{{field.field_name}}.show_in_register" {% if field.show_in_register %} checked {% endif %} ></td>
+                              <td class="col-xs-1"><input type="checkbox" class="form-control" name="{{field.field_name}}.show_in_print" {% if field.show_in_print %} checked {% endif %} ></td>
+                              <td class="col-xs-1"><input type="text" class="form-control" name="{{field.field_name}}.column_in_excel" value="{{ field.column_in_excel }}"></td>
+                            </tr>
                         {% endfor %}
                         
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
@@ -74,7 +77,8 @@
   
   
               <input type="submit" value="Next" style="width:100px" class="btn btn-success pull-right">
-          
+              <a href="{% url 'event_app:edit' event_id %}" style="width: 100px" class="btn btn-primary pull-left">Back</a>&nbsp;
+
           </form>
       </div>
   

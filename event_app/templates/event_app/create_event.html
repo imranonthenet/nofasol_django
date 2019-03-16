@@ -4,7 +4,7 @@
 
 {% block body_block %}
 <ol class="breadcrumb">
-    <li><a href="/event">Home</a></li>
+    <li><a href="{% url 'event_app:event_list' %}">Home</a></li>
     <li class="active">Event Setup</li>
   </ol>
   
@@ -39,12 +39,8 @@
           </div>
           {% endif %}
 
-          <form action="{% url 'event_app:edit' %}" method="POST" enctype="multipart/form-data">
+          <form action="{% url 'event_app:create_event' %}" method="POST" enctype="multipart/form-data">
               {% csrf_token %}
-                {{ form.botcacher.errors }}
-                {{ form.botcacher }}
-
-              <input type="hidden" name="eventId" value="">
   
               <div class="form-group">
                   {{ form.event_name.errors }}
@@ -71,7 +67,7 @@
   
               <input type="submit" value="Next" style="width: 100px" class="btn btn-success pull-right">&nbsp;
   
-              <a href="/event" style="width: 100px" class="btn btn-primary pull-left">Back</a>&nbsp;
+              <a href="{% url 'event_app:event_list' %}" style="width: 100px" class="btn btn-primary pull-left">Back</a>&nbsp;
   
           </form>
       </div>

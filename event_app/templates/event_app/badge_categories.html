@@ -5,7 +5,7 @@
 {% block body_block %}
 
 <ol class="breadcrumb">
-    <li><a href="/event">Home</a></li>
+    <li><a href="{% url 'event_app:event_list' %}">Home</a></li>
     <li class="active">Event Setup</li>
   </ol>
   
@@ -61,7 +61,7 @@
   
               <input type="submit" value="Next" style="width:100px" class="btn btn-success pull-right">
             
-  
+              <a href="{% url 'event_app:event_fields' event_id %}" style="width: 100px" class="btn btn-primary pull-left">Back</a>&nbsp;
           </form>
       </div>
   

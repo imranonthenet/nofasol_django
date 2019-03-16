@@ -1,15 +1,108 @@
-from django.shortcuts import render
-from django.http import HttpResponseRedirect
-from .forms import EditForm
-from .models import Event, EventField,EventBadgeCategory,BadgeCategory
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponseRedirect, Http404
+from .forms import EditForm, ImportDataForm
+from .models import Event, EventField,EventBadgeCategory,BadgeCategory, ImportData
 import os
 from django.core.files.storage import FileSystemStorage
 from django.urls import reverse
 
 # Create your views here.
+def event_list(request):
+    events = Event.objects.all()
+    print('events=',events)
+    return render(request, 'event_app/event_list.html', {'events':events})
+    
+def import_data(request, id):
+    event = get_object_or_404(Event, id=id)
+
+    if request.method == 'POST':
+        form = ImportDataForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            form.save()
+            return redirect('event_app:event_list')
+
+    else:
+        form = ImportDataForm()
+
+    return render(request, 'event_app/import_data.html', {'form':form, 'event_id':id})
+
+def create_event(request):
+    if request.method == 'POST':
+        form = EditForm(request.POST, request.FILES)
+        if form.is_valid():
+            event = form.save()
+            insert_event_fields_with_defaults(event)
+            insert_badge_categories_with_defaults(event)
+
+            return redirect('event_app:event_fields', id=event.id)
+
+    else:
+        form = EditForm()
+    
+    return render(request, 'event_app/create_event.html', {'form': form})
+
+def edit(request, id):
+    event = get_object_or_404(Event, id=id)
+
+    if request.method == "POST":
+        form = EditForm(request.POST, request.FILES, instance=event)
+        if form.is_valid():
+            event = form.save()
+            return redirect('event_app:event_fields', id=event.id)
+
+    else:
+        form = EditForm(instance=event)
+
+    return render(request, 'event_app/edit_event.html', {'form': form, 'event_id':id})
 
 
-def edit(request):
+def create_event1(request):
+
+    if request.method == 'POST':
+        
+        form = EditForm(request.POST, request.FILES)
+
+        if form.is_valid():
+
+            logo_file = request.FILES['event_logo']
+            #fs = FileSystemStorage()
+            #filename = fs.save(logo_file.name, logo_file)
+            #uploaded_file_url = fs.url(filename)
+            #request.session['event_logo'] = uploaded_file_url
+            request.session['event_logo'] = '/static/' + logo_file.name
+            handle_uploaded_file(logo_file)
+
+            event = Event()
+            event.event_name = form.cleaned_data['event_name']
+            event.event_logo = logo_file.name
+            event.event_from_date = form.cleaned_data['event_from_date']
+            event.event_to_date = form.cleaned_data['event_to_date']
+            event.setup_complete = False
+            event.save()
+
+            insert_event_fields_with_defaults(event)
+ 
+           
+            # return HttpResponseRedirect(reverse('event_app:event_fields', args=[event.id] ))
+            return redirect('event_app:event_fields', id=event.id)
+    else:
+        form = EditForm()
+
+
+    return render(request, 'event_app/create_event.html', {'form': form})
+
+
+def edit1(request, id):
+    event = get_object_or_404(Event, id=id)
+    form = EditForm(
+        {
+            'event_name':event.event_name, 
+            'event_logo':event.event_logo,
+            'event_from_date':event.event_from_date,
+            'event_to_date':event.event_to_date
+        })
+
     if request.method == 'POST':
         
         form = EditForm(request.POST, request.FILES)
@@ -27,23 +120,21 @@ def edit(request):
             request.session['event_logo'] = '/static/' + logo_file.name
             handle_uploaded_file(logo_file)
 
-            event = Event()
             event.event_name = form.cleaned_data['event_name']
+            event.event_logo = logo_file.name
             event.event_from_date = form.cleaned_data['event_from_date']
             event.event_to_date = form.cleaned_data['event_to_date']
+            event.setup_complete = False
             event.save()
-
-            insert_event_fields_with_defaults(event)
-            
-            #return event_fields(request)
-            #return HttpResponseRedirect(f'/event/event_fields/{event.id}')
+ 
            
-            return HttpResponseRedirect(reverse('event_app:event_fields', args=[event.id] ))
-    else:
-        form = EditForm()
-        
+            # return HttpResponseRedirect(reverse('event_app:event_fields', args=[event.id] ))
+            return redirect('event_app:event_fields', id=id)
 
-    return render(request, 'event_app/edit.html', {'form': form})
+
+
+    return render(request, 'event_app/edit.html', {'form': form, 'event_id':id})
+
 
 def event_fields(request, id):
     if request.method == 'POST':
@@ -55,11 +146,27 @@ def event_fields(request, id):
         for field in db_fields:
             field_label = form_field_values[f'{field.field_name}.field_label']
 
+
+            is_mandatory = form_field_values.get(f'{field.field_name}.is_mandatory','') == 'on'
+            show_in_search = form_field_values.get(f'{field.field_name}.show_in_search','') == 'on'
+            include_in_search = form_field_values.get(f'{field.field_name}.include_in_search','') == 'on'
+            show_in_register = form_field_values.get(f'{field.field_name}.show_in_register','') == 'on'
+            show_in_print = form_field_values.get(f'{field.field_name}.show_in_print','') == 'on'
+            column_in_excel = form_field_values[f'{field.field_name}.column_in_excel']
+
             event_field = EventField.objects.get(id=field.id)
+
             event_field.field_label = field_label
+            event_field.is_mandatory = is_mandatory
+            event_field.show_in_search = show_in_search
+            event_field.include_in_search = include_in_search
+            event_field.show_in_register = show_in_register
+            event_field.show_in_print = show_in_print
+            event_field.column_in_excel = column_in_excel
+
             event_field.save()
 
-        insert_badge_categories_with_defaults(id)
+        
         return HttpResponseRedirect(reverse('event_app:badge_categories', args=[id]))
 
     else:
@@ -130,7 +237,12 @@ def badge_layout(request,id):
                 field.text_align = form_field_values[f'{field.field_name}_textAlign']
             
             field.save()
+            event = Event.objects.get(id=id)
+            event.setup_complete = True
+            event.save()
 
+        return redirect('event_app:event_list')
+    
     return render(request,'event_app/badge_layout.html', {'fields':badge_fields, 'event_id':id, 'show_barcode':show_barcode,'barcode_left':barcode_left,'barcode_top':barcode_top} )
 
 def handle_uploaded_file(f):
@@ -141,11 +253,11 @@ def handle_uploaded_file(f):
         for chunk in f.chunks():
             file.write(chunk)
 
-def insert_badge_categories_with_defaults(event_id):
-    e = Event.objects.get(id=event_id)
+def insert_badge_categories_with_defaults(event):
 
-    EventBadgeCategory.objects.create(event=e, badge_category_code='VIP',badge_category_desc='VIP', show_in_register=True)
-    EventBadgeCategory.objects.create(event=e, badge_category_code='Student',badge_category_desc='Student', show_in_register=False)
+
+    EventBadgeCategory.objects.get_or_create(event=event, badge_category_code='VIP',badge_category_desc='VIP', show_in_register=True)
+    EventBadgeCategory.objects.get_or_create(event=event, badge_category_code='Student',badge_category_desc='Student', show_in_register=False)
 
 
 def insert_event_fields_with_defaults(event):
