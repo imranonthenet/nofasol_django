@@ -28,7 +28,7 @@ pycodestyle==2.4.0
 pylint==2.2.2
 python-dateutil==2.7.3
 pytz==2018.9
-PyYAML==3.13
+PyYAML==5.4
 requests==2.18.4
 semantic-version==2.5.0
 six==1.12.0
